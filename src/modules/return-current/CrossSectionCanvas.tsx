@@ -13,8 +13,9 @@ interface Props {
   slotWidthMm: number;
 }
 
-const HEIGHT = 250;
 const V_PX_PER_MM = 45; // fixed vertical scale (exaggeration noted on canvas)
+const Y_TRACE_BOTTOM = 46; // room above for the w label and scale note only
+const BOTTOM_PAD = 60; // plane + W dimension + slot caption
 
 /**
  * Cross-section of the microstrip: trace at height h over a plane of width W,
@@ -22,14 +23,14 @@ const V_PX_PER_MM = 45; // fixed vertical scale (exaggeration noted on canvas)
  */
 export function CrossSectionCanvas({ hMm, wMm, WMm, f, slot, slotWidthMm }: Props) {
   const draw = useCallback(
-    (ctx: CanvasRenderingContext2D, cw: number) => {
+    (ctx: CanvasRenderingContext2D, cw: number, ch: number) => {
       const padX = 34;
       const planeW = cw - 2 * padX;
       const pxPerMm = planeW / WMm;
       const cx = cw / 2;
-      const yPlane = 186; // top of the plane
+      const yPlane = Y_TRACE_BOTTOM + hMm * V_PX_PER_MM; // top of the plane
       const planeThick = 12;
-      const yTraceBottom = yPlane - hMm * V_PX_PER_MM;
+      const yTraceBottom = Y_TRACE_BOTTOM;
       const traceThick = 8;
       const traceWpx = Math.max(3, wMm * pxPerMm);
 
@@ -39,7 +40,7 @@ export function CrossSectionCanvas({ hMm, wMm, WMm, f, slot, slotWidthMm }: Prop
         slot ? returnCurrentDensityWithSlot(xM, p, slotW) : returnCurrentDensity(xM, p);
 
       ctx.fillStyle = COLORS.surface;
-      ctx.fillRect(0, 0, cw, HEIGHT);
+      ctx.fillRect(0, 0, cw, ch);
 
       // Dielectric substrate (thickness h) between plane and trace
       ctx.fillStyle = 'rgba(255,255,255,0.045)';
@@ -120,7 +121,7 @@ export function CrossSectionCanvas({ hMm, wMm, WMm, f, slot, slotWidthMm }: Prop
         ctx.fillText(
           'return current detours around the slot — loop area balloons (schematic)',
           cx,
-          HEIGHT - 8,
+          ch - 8,
         );
       }
 
@@ -137,7 +138,8 @@ export function CrossSectionCanvas({ hMm, wMm, WMm, f, slot, slotWidthMm }: Prop
     [hMm, wMm, WMm, f, slot, slotWidthMm],
   );
 
-  const ref = useCanvasDraw(draw, HEIGHT);
+  const height = Y_TRACE_BOTTOM + hMm * V_PX_PER_MM + BOTTOM_PAD;
+  const ref = useCanvasDraw(draw, height);
   return (
     <div className="canvas-wrap">
       <canvas ref={ref} />

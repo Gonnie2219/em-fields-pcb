@@ -197,12 +197,16 @@ export function scorecard(s: Stackup, epsR: number): ScoreEntry[] {
     });
   }
 
-  // 3. Outer signal layers → EMI exposure
+  // 3. Outer signal layers → EMI exposure. Only suggest inner-layer routing
+  // when the stackup actually has inner signal layers to route on.
   const outerS = [0, n - 1].filter((i) => s.copper[i] === 'S');
+  const hasInnerS = s.copper.some((r, i) => r === 'S' && i !== 0 && i !== n - 1);
   if (outerS.length) {
     entries.push({
       status: 'warn',
-      text: `${layerList(outerS)} are surface layers — their fields extend into free space, so fast edges there radiate directly (route the fastest signals on inner layers).`,
+      text: hasInnerS
+        ? `${layerList(outerS)} are surface layers — their fields extend into free space, so fast edges there radiate directly (route the fastest signals on inner layers).`
+        : `${layerList(outerS)} are surface layers and this stackup has no inner signal layers to hide in — so slow the edges to what the design actually needs, keep the fast runs short, and surround them with solid ground pour.`,
     });
   } else {
     entries.push({
