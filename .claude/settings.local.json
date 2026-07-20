@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm *)",
+      "Skill(dataviz)",
+      "PowerShell(npm test *)",
+      "PowerShell(Start-Sleep -Seconds 2; \\(Invoke-WebRequest http://localhost:5173/ -UseBasicParsing\\).StatusCode; \\(Invoke-WebRequest http://localhost:5173/src/main.tsx -UseBasicParsing\\).StatusCode; \\(Invoke-WebRequest http://localhost:5173/src/modules/return-current/ReturnCurrentModule.tsx -UseBasicParsing\\).StatusCode)",
+      "PowerShell(git *)"
+    ]
+  }
+}
