@@ -386,10 +386,12 @@ export function LoopModule() {
             </table>
             <p className="caption">
               The model runs consistently above Module 4&apos;s folk presets — shown, not tuned
-              away. Chief suspect: the plane return is modeled as a wire as narrow as the
-              escape trace, while a real plane spreads the return current (Module 1) and the
-              proximity of opposing currents trims the flux further. Treat the model as an
-              upper-ish estimate and the presets as measurement-derived folklore.
+              away. Caveat: the rectangle model treats the plane return as a wire as narrow as
+              the escape trace, but a real plane returns the current as a spread image
+              (Module 1), which roughly halves the horizontal-run term of the loop in the
+              wide-gap limit — so the model reads high, consistent with the gap flagged
+              above. Both numbers stay on the table: treat the model as an upper-ish estimate
+              and the presets as measurement-derived folklore.
             </p>
           </>
         )}
