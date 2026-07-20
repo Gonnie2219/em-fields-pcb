@@ -10,12 +10,41 @@ export const QUALITY_TARGETS: Record<Quality, { nx: number; ny: number }> = {
 };
 
 export interface SolveRequest {
+  task?: 'solve';
   id: number;
   g: TraceGeometry;
   quality: Quality;
+  /** Opaque caller key, echoed back in the response (cache addressing). */
+  tag?: string;
 }
 
+/** Inverse problem: find w for a target Z0 (≤ 3 solver refinements). */
+export interface InvertRequest {
+  task: 'invert';
+  id: number;
+  /** Geometry template; w is ignored. */
+  g: TraceGeometry;
+  quality: Quality;
+  targetZ0: number;
+  tag?: string;
+}
+
+export type WorkerRequest = SolveRequest | InvertRequest;
+
+export interface InvertResponse {
+  task: 'invert';
+  id: number;
+  tag?: string;
+  /** Synthesized width [m] and the solver Z0 achieved there. */
+  w: number;
+  Z0: number;
+}
+
+export type WorkerResponse = SolveResponse | InvertResponse;
+
 export interface SolveResponse {
+  task?: 'solve';
+  tag?: string;
   id: number;
   /** Grid of the dielectric solve, for rendering overlays. */
   nx: number;

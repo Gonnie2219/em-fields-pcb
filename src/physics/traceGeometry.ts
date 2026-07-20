@@ -10,10 +10,12 @@
  * Stripline: trace centered between two Dirichlet 0 V planes with clearance h
  * above and below, dielectric everywhere; side margin ≥ 3 plane spacings
  * (fields decay as exp(−π|x|/b) between planes).
+ * Offset stripline: like stripline but with unequal clearances h (below) and
+ * hAbove; with hAbove = h it produces the identical symmetric-stripline grid.
  */
 import type { ElectrostaticProblem } from './electrostatic';
 
-export type TraceKind = 'microstrip' | 'stripline';
+export type TraceKind = 'microstrip' | 'stripline' | 'offset-stripline';
 
 export interface TraceGeometry {
   kind: TraceKind;
@@ -21,8 +23,16 @@ export interface TraceGeometry {
   w: number;
   /** Trace thickness [m]; 0 → single node row. */
   t: number;
-  /** Microstrip: dielectric height under the trace. Stripline: trace-to-plane clearance. [m] */
+  /**
+   * Microstrip: dielectric height under the trace. Stripline: trace-to-plane
+   * clearance (both sides). Offset stripline: clearance to the LOWER plane. [m]
+   */
   h: number;
+  /**
+   * Offset stripline only: clearance to the upper plane [m]. Defaults to h,
+   * in which case the geometry is identical to the symmetric stripline.
+   */
+  hAbove?: number;
   /** Dielectric relative permittivity. */
   epsR: number;
 }
@@ -56,9 +66,12 @@ export function buildTraceProblem(
   nyTarget = 129,
 ): { problem: ElectrostaticProblem; meta: TraceProblemMeta } {
   const { kind, w, t, h, epsR } = g;
-  const margin = kind === 'microstrip' ? 8 * Math.max(w, h) : Math.max(3 * (2 * h + t), w);
+  /** Upper-plane clearance for stripline variants; null for microstrip. */
+  const hAbove = kind === 'microstrip' ? null : kind === 'stripline' ? h : g.hAbove ?? h;
+  const b = hAbove !== null ? h + t + hAbove : 0;
+  const margin = kind === 'microstrip' ? 8 * Math.max(w, h) : Math.max(3 * b, w);
   const boxW = w + 2 * margin;
-  const boxH = kind === 'microstrip' ? h + t + 8 * Math.max(w, h) : 2 * h + t;
+  const boxH = kind === 'microstrip' ? h + t + 8 * Math.max(w, h) : b;
 
   const dxT = boxW / (nxTarget - 1);
   const nw = clamp(Math.round(w / dxT), 6, MAX_TRACE_CELLS);
@@ -67,25 +80,30 @@ export function buildTraceProblem(
   const nx = nw + 2 * nside + 1;
 
   const dyT = boxH / (nyTarget - 1);
-  let nh = clamp(Math.round(h / dyT), 4, MAX_TRACE_CELLS);
+  // dy is set by the smaller plane clearance so both gaps stay resolved.
+  const hRef = hAbove !== null ? Math.min(h, hAbove) : h;
+  let nRef = clamp(Math.round(hRef / dyT), 4, MAX_TRACE_CELLS);
   // Cap cell anisotropy (dx/dy) at 2.5 where the minimum resolution allows.
-  nh = Math.max(4, Math.min(nh, Math.ceil(h / (dx / 2.5))));
+  nRef = Math.max(4, Math.min(nRef, Math.ceil(hRef / (dx / 2.5))));
   // A finite trace thickness must be resolvable (dy ≤ ~t), or the modeled
   // thickness nt·dy quantizes far from t and Z0 jumps between grid densities.
-  if (t > 0) nh = Math.min(Math.max(nh, Math.ceil(h / t)), MAX_TRACE_CELLS);
-  const dy = h / nh;
+  if (t > 0) nRef = Math.min(Math.max(nRef, Math.ceil(hRef / t)), MAX_TRACE_CELLS);
+  const dy = hRef / nRef;
+  const nh = hRef === h ? nRef : Math.max(4, Math.round(h / dy));
   const nt = t > 0 ? Math.max(1, Math.round(t / dy)) : 0;
   const ntop =
     kind === 'microstrip'
       ? Math.min(Math.ceil((8 * Math.max(w, h)) / dy), MAX_MARGIN_CELLS)
-      : nh;
+      : hAbove === hRef
+        ? nRef
+        : Math.max(4, Math.round(hAbove! / dy));
   const ny = nh + nt + ntop + 1;
 
   const ncx = nx - 1;
   const ncy = ny - 1;
   const eps = new Float64Array(ncx * ncy);
   for (let j = 0; j < ncy; j++) {
-    const e = kind === 'stripline' || j < nh ? epsR : 1;
+    const e = kind !== 'microstrip' || j < nh ? epsR : 1;
     eps.fill(e, j * ncx, (j + 1) * ncx);
   }
 
@@ -93,7 +111,7 @@ export function buildTraceProblem(
   const fixedValue = new Float64Array(nx * ny);
   // Bottom plane at 0 V; stripline also has a top plane at 0 V.
   fixed.fill(1, 0, nx);
-  if (kind === 'stripline') fixed.fill(1, (ny - 1) * nx, ny * nx);
+  if (kind !== 'microstrip') fixed.fill(1, (ny - 1) * nx, ny * nx);
   // Trace at 1 V.
   const iTrace0 = nside;
   const iTrace1 = nside + nw;

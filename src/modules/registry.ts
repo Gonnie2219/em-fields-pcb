@@ -46,12 +46,12 @@ export const MODULES: ModuleInfo[] = [
     id: 'stackup-explorer',
     title: 'Stackup explorer',
     group: 'Stackup & Impedance',
-    status: 'soon',
+    status: 'ready',
     description:
-      'Build 2-, 4-, and 6-layer stackups and compare them. See how field containment ' +
-      'changes when signals reference a solid plane versus another signal layer, why ' +
-      'plane pairs make good stackups, and what the classic good and bad stackup ' +
-      'orderings actually do to the fields.',
+      'Build 2-, 4-, and 6-layer stackups and compare them. See each signal layer’s ' +
+      'return corridor and solver-computed Z₀, why plane pairs give “free” HF ' +
+      'capacitance, and what the classic good and bad stackup orderings actually do ' +
+      'to the fields.',
   },
   {
     id: 'decoupling',

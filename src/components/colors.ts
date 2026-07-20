@@ -13,6 +13,7 @@ export const COLORS = {
   series1: '#3987e5', // blue – primary / blended
   series2: '#199e70', // aqua – HF limit
   series3: '#c98500', // yellow – DC limit, copper
+  violet: '#9085e9', // violet – power-plane accents
   hot: '#e66767', // red – warnings (slot)
 };
 

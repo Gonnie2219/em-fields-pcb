@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import { App } from './App';
 import { TraceFieldsModule } from './modules/trace-fields/TraceFieldsModule';
+import { StackupModule } from './modules/stackup/StackupModule';
 
 describe('render smoke test', () => {
   it('renders the app shell with Module 1 active', () => {
@@ -19,5 +20,12 @@ describe('render smoke test', () => {
     const html = renderToString(<TraceFieldsModule />);
     expect(html).toContain('solving');
     expect(html).toContain('Characteristic impedance');
+  });
+
+  it('renders Module 3 with scorecard and plane-pair readouts', () => {
+    const html = renderToString(<StackupModule />);
+    expect(html).toContain('Stackup cross-section');
+    expect(html).toContain('Scorecard');
+    expect(html).toContain('interplane capacitance');
   });
 });

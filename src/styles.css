@@ -299,6 +299,69 @@ body {
   margin-top: 10px;
 }
 
+.stack-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.stack-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  padding: 4px 10px 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stack-table td {
+  padding: 6px 10px 6px 0;
+  border-bottom: 1px solid var(--grid);
+  color: var(--ink-2);
+}
+
+.stack-table td:first-child {
+  color: var(--ink);
+}
+
+.score-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.score-item {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 5px 0;
+  max-width: 90ch;
+}
+
+.score-badge {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 18px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--page);
+}
+
+.score-item.good .score-badge {
+  background: #0ca30c;
+}
+
+.score-item.warn .score-badge {
+  background: #fab219;
+}
+
+.score-item.bad .score-badge {
+  background: #ec835a;
+}
+
 /* ---------- Physics panel ---------- */
 details.physics-panel {
   background: var(--surface);

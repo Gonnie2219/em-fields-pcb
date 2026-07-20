@@ -65,7 +65,7 @@ Groups: Fundamentals / Stackup & Impedance / Power Integrity / SI & EMC.
 |---|--------|-------|--------|
 | 1 | Where does return current flow? | Fundamentals | **Implemented** |
 | 2 | Fields around a trace (2D electrostatic solver, E-field, Z0 vs geometry) | Fundamentals | **Implemented** |
-| 3 | Stackup explorer (2/4/6-layer, field containment, good vs bad) | Stackup & Impedance | Stub |
+| 3 | Stackup explorer (2/4/6-layer, field containment, good vs bad) | Stackup & Impedance | **Implemented** |
 | 4 | Decoupling capacitors (\|Z\| vs f, ESR/ESL, anti-resonance) | Power Integrity | Stub |
 | 5 | Loop inductance (loop area, HF dominance) | Power Integrity | Stub |
 | 6 | Crosstalk (coupling vs spacing and height) | SI & EMC | Stub |
@@ -81,6 +81,12 @@ Module 2 physics: quasi-TEM microstrip/stripline via the electrostatic solver an
 two-solve method (see above); validated against parallel-plate closed forms and
 Hammerstad–Jensen (Z₀ and ε_eff within 5 % at w/h = 1 and 2, εr = 4.4), plus a
 grid-doubling convergence test (< 2 % Z₀ shift).
+
+Module 3 physics: offset-stripline geometry added to the builder (reduces exactly to
+symmetric stripline when clearances match); solver validated against Cohn's exact
+stripline solution (within 3 %); width-for-50 Ω synthesis = closed-form guess + ≤ 3
+solver secant steps (round-trip within 1 Ω); interplane C″ = ε0εr/d. The worker gained
+an 'invert' task and cache tags; stackup heuristics (scorecard) live in the module.
 
 ## Conventions
 

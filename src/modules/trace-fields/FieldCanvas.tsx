@@ -37,7 +37,7 @@ export function FieldCanvas({ g, res, showHeatmap, showContours, showArrows }: P
       }
       const { nx, ny, dx, dy, x0, phi } = res;
       const ncx = nx - 1;
-      const mx = Math.max(g.w, g.h);
+      const mx = Math.max(g.w, g.h, g.kind === 'offset-stripline' ? g.hAbove ?? g.h : 0);
       const vwHalf = Math.min(g.w / 2 + 2.75 * mx, -x0);
       const yMax =
         g.kind === 'microstrip' ? Math.min(g.h + g.t + 2.2 * mx, (ny - 1) * dy) : (ny - 1) * dy;
@@ -155,7 +155,7 @@ export function FieldCanvas({ g, res, showHeatmap, showContours, showArrows }: P
       // Conductors on top
       ctx.fillStyle = COLORS.series3;
       ctx.fillRect(px(-vwHalf), py(0), 2 * vwHalf * s, 6);
-      if (g.kind === 'stripline') ctx.fillRect(px(-vwHalf), py(yMax) - 6, 2 * vwHalf * s, 6);
+      if (g.kind !== 'microstrip') ctx.fillRect(px(-vwHalf), py(yMax) - 6, 2 * vwHalf * s, 6);
       const tPix = Math.max(g.t * s, 3);
       ctx.fillRect(px(-g.w / 2), py(g.h + g.t), g.w * s, tPix);
 
@@ -163,7 +163,7 @@ export function FieldCanvas({ g, res, showHeatmap, showContours, showArrows }: P
       ctx.fillStyle = COLORS.page;
       ctx.textAlign = 'left';
       ctx.fillText('0 V', px(-vwHalf) + 6, py(0) + 5.5);
-      if (g.kind === 'stripline') ctx.fillText('0 V', px(-vwHalf) + 6, py(yMax) - 1.5);
+      if (g.kind !== 'microstrip') ctx.fillText('0 V', px(-vwHalf) + 6, py(yMax) - 1.5);
       ctx.fillStyle = COLORS.ink2;
       ctx.fillText('1 V', px(g.w / 2) + 6, py(g.h + g.t / 2) + 4);
       ctx.fillStyle = COLORS.muted;

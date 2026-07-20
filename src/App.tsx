@@ -4,10 +4,12 @@ import { MODULES } from './modules/registry';
 import { StubModule } from './modules/StubModule';
 import { ReturnCurrentModule } from './modules/return-current/ReturnCurrentModule';
 import { TraceFieldsModule } from './modules/trace-fields/TraceFieldsModule';
+import { StackupModule } from './modules/stackup/StackupModule';
 
 const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'return-current': ReturnCurrentModule,
   'trace-fields': TraceFieldsModule,
+  'stackup-explorer': StackupModule,
 };
 
 export function App() {
