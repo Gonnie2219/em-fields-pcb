@@ -1,4 +1,5 @@
-import type { TraceGeometry } from '../../physics/traceGeometry';
+import type { CoupledPairGeometry, TraceGeometry } from '../../physics/traceGeometry';
+import type { CoupledPairParams } from '../../physics/crosstalk';
 
 export type Quality = 'draft' | 'balanced' | 'fine';
 
@@ -29,7 +30,26 @@ export interface InvertRequest {
   tag?: string;
 }
 
-export type WorkerRequest = SolveRequest | InvertRequest;
+/** Coupled-pair analysis (Module 6): even/odd/aggressor solves + isolated line. */
+export interface PairRequest {
+  task: 'pair';
+  id: number;
+  g: CoupledPairGeometry;
+  quality: Quality;
+  tag?: string;
+}
+
+/** Coupling-vs-spacing sweep at a fixed coarse grid (drag-release only). */
+export interface PairSweepRequest {
+  task: 'pairSweep';
+  id: number;
+  /** Geometry template; s is taken from `spacings`. */
+  g: CoupledPairGeometry;
+  spacings: number[];
+  tag?: string;
+}
+
+export type WorkerRequest = SolveRequest | InvertRequest | PairRequest | PairSweepRequest;
 
 export interface InvertResponse {
   task: 'invert';
@@ -40,7 +60,43 @@ export interface InvertResponse {
   Z0: number;
 }
 
-export type WorkerResponse = SolveResponse | InvertResponse;
+export interface PairResponse {
+  task: 'pair';
+  id: number;
+  tag?: string;
+  /** Grid of the real-dielectric solves, for rendering overlays. */
+  nx: number;
+  ny: number;
+  dx: number;
+  dy: number;
+  /** x of node i = 0 [m]; the symmetry plane between the traces is x = 0. */
+  x0: number;
+  jDiel: number;
+  /** Edge-to-edge spacing actually meshed [m]. */
+  sActual: number;
+  /** Real-dielectric fields for the three excitations. */
+  phiAggressor: Float64Array;
+  phiEven: Float64Array;
+  phiOdd: Float64Array;
+  pair: CoupledPairParams;
+  /** Isolated single-trace parameters (same w, t, h, εr; Module 2's path). */
+  isoZ0: number;
+  isoEpsEff: number;
+  iterations: number;
+  solveMs: number;
+}
+
+export interface PairSweepResponse {
+  task: 'pairSweep';
+  id: number;
+  tag?: string;
+  /** Meshed spacings [m] and the coupling ratios at each. */
+  sActual: number[];
+  cmCs: number[];
+  lmLs: number[];
+}
+
+export type WorkerResponse = SolveResponse | InvertResponse | PairResponse | PairSweepResponse;
 
 export interface SolveResponse {
   task?: 'solve';

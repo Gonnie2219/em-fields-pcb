@@ -7,6 +7,7 @@ import { TraceFieldsModule } from './modules/trace-fields/TraceFieldsModule';
 import { StackupModule } from './modules/stackup/StackupModule';
 import { PdnModule } from './modules/pdn/PdnModule';
 import { LoopModule } from './modules/loop-inductance/LoopModule';
+import { CrosstalkModule } from './modules/crosstalk/CrosstalkModule';
 
 const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'return-current': ReturnCurrentModule,
@@ -14,6 +15,7 @@ const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'stackup-explorer': StackupModule,
   decoupling: PdnModule,
   'loop-inductance': LoopModule,
+  crosstalk: CrosstalkModule,
 };
 
 export function App() {

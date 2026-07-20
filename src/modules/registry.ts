@@ -78,7 +78,7 @@ export const MODULES: ModuleInfo[] = [
     id: 'crosstalk',
     title: 'Crosstalk',
     group: 'SI & EMC',
-    status: 'soon',
+    status: 'ready',
     description:
       'An aggressor trace couples capacitively and inductively into a victim. Vary the ' +
       'spacing between traces and their height above the plane, and watch near-end and ' +

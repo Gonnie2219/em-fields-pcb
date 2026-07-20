@@ -6,18 +6,27 @@
  * don't change the grid (e.g. εr) warm-start and converge quickly.
  */
 import { capacitancePerLength, cellField, solveLaplace } from '../physics/electrostatic';
-import { buildTraceProblem, withVacuumDielectric, type TraceGeometry } from '../physics/traceGeometry';
+import {
+  buildCoupledPairProblem,
+  buildTraceProblem,
+  withVacuumDielectric,
+  type TraceGeometry,
+} from '../physics/traceGeometry';
 import { lineParamsFromCapacitance } from '../physics/transmissionLine';
+import { solveCoupledPair, type PairWarmStart } from '../physics/crosstalk';
 import { widthForZ0 } from '../physics/widthSynthesis';
 import {
   QUALITY_TARGETS,
   type InvertResponse,
+  type PairResponse,
+  type PairSweepResponse,
   type Quality,
   type SolveResponse,
   type WorkerRequest,
 } from '../modules/trace-fields/solverTypes';
 
 let cache: { key: string; phi: Float64Array; phiVac: Float64Array } | null = null;
+let pairCache: { key: string; warm: PairWarmStart; agg?: Float64Array } | null = null;
 
 /** Z0 only (no field export, no warm-start bookkeeping) for inverse solves. */
 function quickZ0(g: TraceGeometry, quality: Quality): number {
@@ -34,6 +43,77 @@ function quickZ0(g: TraceGeometry, quality: Quality): number {
 
 self.onmessage = (e: MessageEvent<WorkerRequest>) => {
   const req = e.data;
+
+  if (req.task === 'pair') {
+    const t0 = performance.now();
+    const target = QUALITY_TARGETS[req.quality];
+    // Probe the grid signature for warm-starting (cheap next to the solves).
+    const probe = buildCoupledPairProblem(req.g, 1, 1, target.nx, target.ny);
+    const key = `pair:${req.g.kind}:${probe.problem.grid.nx}x${probe.problem.grid.ny}`;
+    const warm = pairCache?.key === key ? pairCache : null;
+
+    const r = solveCoupledPair(req.g, target.nx, target.ny, warm?.warm ?? {});
+    const aggProblem = buildCoupledPairProblem(req.g, 1, 0, target.nx, target.ny).problem;
+    const agg = solveLaplace(aggProblem, { phiInit: warm?.agg });
+    pairCache = {
+      key,
+      warm: { even: r.phiEven, evenVac: r.phiEvenVac, odd: r.phiOdd, oddVac: r.phiOddVac },
+      agg: agg.phi,
+    };
+
+    // Isolated single trace (Module 2's path) for TD's ε_eff and the Z0 anchor.
+    const iso = buildTraceProblem(
+      { kind: req.g.kind, w: req.g.w, t: req.g.t, h: req.g.h, epsR: req.g.epsR },
+      target.nx,
+      target.ny,
+    ).problem;
+    const isoReal = solveLaplace(iso);
+    const isoVacP = withVacuumDielectric(iso);
+    const isoVac = solveLaplace(isoVacP);
+    const isoParams = lineParamsFromCapacitance(
+      capacitancePerLength(iso, isoReal.phi, 1),
+      capacitancePerLength(isoVacP, isoVac.phi, 1),
+    );
+
+    const { nx, ny, dx, dy } = r.problem.grid;
+    const res: PairResponse = {
+      task: 'pair',
+      id: req.id,
+      tag: req.tag,
+      nx,
+      ny,
+      dx,
+      dy,
+      x0: r.meta.x0,
+      jDiel: r.meta.jDiel,
+      sActual: r.meta.sActual,
+      phiAggressor: agg.phi,
+      phiEven: r.phiEven,
+      phiOdd: r.phiOdd,
+      pair: r.params,
+      isoZ0: isoParams.Z0,
+      isoEpsEff: isoParams.epsEff,
+      iterations: r.iterations + agg.iterations + isoReal.iterations + isoVac.iterations,
+      solveMs: performance.now() - t0,
+    };
+    postMessage(res);
+    return;
+  }
+
+  if (req.task === 'pairSweep') {
+    const sActual: number[] = [];
+    const cmCs: number[] = [];
+    const lmLs: number[] = [];
+    for (const s of req.spacings) {
+      const r = solveCoupledPair({ ...req.g, s }, 129, 65);
+      sActual.push(r.meta.sActual);
+      cmCs.push(r.params.cmCs);
+      lmLs.push(r.params.lmLs);
+    }
+    const res: PairSweepResponse = { task: 'pairSweep', id: req.id, tag: req.tag, sActual, cmCs, lmLs };
+    postMessage(res);
+    return;
+  }
 
   if (req.task === 'invert') {
     const found = widthForZ0(req.g, req.targetZ0, (w) => quickZ0({ ...req.g, w }, req.quality), 3);

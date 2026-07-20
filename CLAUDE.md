@@ -33,6 +33,10 @@ Reusable numerics: `src/physics/electrostatic.ts` is a geometry-agnostic 2D
 builders (e.g. `traceGeometry.ts`) produce `ElectrostaticProblem`s for it, and
 `transmissionLine.ts` turns the two-solve capacitances (real εr and vacuum)
 into quasi-TEM L′, Z₀, ε_eff, v_p. Module 3 should reuse all of this.
+Multi-conductor support (Module 6): N Dirichlet regions at independent
+potentials with per-conductor free charge via `conductorCharge` (discrete
+Gauss law, exactly consistent with the stencil); the energy path stays for
+single-conductor solves. `buildCoupledPairProblem` meshes a symmetric pair.
 Solves run in `src/workers/fieldSolver.worker.ts` (debounced, warm-started).
 
 ## Physics rules (non-negotiable)
@@ -68,7 +72,7 @@ Groups: Fundamentals / Stackup & Impedance / Power Integrity / SI & EMC.
 | 3 | Stackup explorer (2/4/6-layer, field containment, good vs bad) | Stackup & Impedance | **Implemented** |
 | 4 | Decoupling capacitors (\|Z\| vs f, ESR/ESL, anti-resonance) | Power Integrity | **Implemented** |
 | 5 | Loop inductance (loop area, HF dominance) | Power Integrity | **Implemented** |
-| 6 | Crosstalk (coupling vs spacing and height) | SI & EMC | Stub |
+| 6 | Crosstalk (coupling vs spacing and height) | SI & EMC | **Implemented** |
 | 7 | Wave playground (2D FDTD sandbox: reflections, shielding, via fences) | SI & EMC | Stub |
 | 8 | Grounding sins (slot under trace, split planes) | SI & EMC | Stub |
 
@@ -105,6 +109,20 @@ depth-to-plane with r_eff = 0.2235(w+t) GMD strip radius, labeled ~±30 % estima
 not tuned away); R(f) = DC → skin-shell ρl/(π(r²−(r−δ)²)); crossover ωL = R by
 bisection (default loop ≈ 3.8 kHz); ground bounce V = L·ΔI/Δt. Depth presets come
 from Module 3's stackups. UI: scenario tabs with the shaded loop area as the star.
+
+Module 6 physics (src/physics/crosstalk.ts + solver extension): even/odd analysis
+of the symmetric pair — solve (1,1) and (1,−1) each with real εr and vacuum, per-line
+C from conductorCharge → Z_even = 1/(c√(C_e·C_e0)), Z_odd likewise, Z_diff = 2·Z_odd,
+Z_comm = Z_even/2; Cm/Cs = (C_o−C_e)/(C_o+C_e), Lm/Ls = (L_e−L_o)/(L_e+L_o) with
+L = 1/(c²·C0). Weak-coupling matched-end crosstalk (Hall & Heck 2009 ch. 4):
+NEXT Kb = ¼(Cm/Cs+Lm/Ls), duration 2·TD, saturating at 2·TD ≥ t_r; FEXT
+Kf = ½(Cm/Cs−Lm/Ls)·TD/t_r, width ≈ t_r, negative for microstrip (sign convention in
+JSDoc); TD from the isolated line's ε_eff. Closed-form pulse sketches only — no FDTD.
+Validated: odd ≡ Dirichlet-0 wall / even ≡ Neumann wall (1 %), isolation limit s/h=10
+vs Module 2's Z₀ (3 %), stripline Lm/Ls = Cm/Cs (homogeneity, 2 %), Cm/Cs monotone in
+s, NEXT length-independent when saturated / FEXT linear, grid-doubling Z_odd < 2 %.
+Worker gained 'pair' (5 pair + 2 isolated solves, warm-started) and 'pairSweep'
+(coarse-grid spacing sweep on drag-release, cached per geometry) tasks.
 
 ## Conventions
 

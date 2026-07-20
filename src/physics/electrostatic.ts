@@ -183,6 +183,58 @@ export function capacitancePerLength(p: ElectrostaticProblem, phi: Float64Array,
   return (2 * electrostaticEnergy(p, phi)) / (V * V);
 }
 
+/** Node mask (1 inside) for the inclusive node rectangle [i0, i1] × [j0, j1]. */
+export function rectNodeMask(grid: Grid, i0: number, i1: number, j0: number, j1: number): Uint8Array {
+  const mask = new Uint8Array(grid.nx * grid.ny);
+  for (let j = j0; j <= j1; j++) mask.fill(1, j * grid.nx + i0, j * grid.nx + i1 + 1);
+  return mask;
+}
+
+/**
+ * Free charge per unit length on a conductor region by the discrete Gauss
+ * law: Q′ = ε0 · Σ over links crossing the region boundary of
+ * a_link · (φ_in − φ_out)  [C/m] — i.e. ∮ ε E·n dl evaluated on the same
+ * face coefficients the solver uses, so it is exactly consistent with the
+ * stencil (network identity: W′ = ½ Σ_conductors V_i Q_i, hence for a
+ * two-conductor 0/V system Q′/V reproduces capacitancePerLength).
+ * This is the multi-conductor path: with N Dirichlet regions at independent
+ * potentials, per-conductor charges give the full capacitance matrix.
+ *
+ * @param mask node mask of the conductor region (1 = inside), length nx·ny
+ * @returns charge per unit length [C/m]
+ */
+export function conductorCharge(
+  p: ElectrostaticProblem,
+  phi: Float64Array,
+  mask: Uint8Array,
+): number {
+  const { nx, ny } = p.grid;
+  const ncx = nx - 1;
+  const { aH, aV } = linkCoefficients(p);
+  let sum = 0;
+  for (let j = 0; j < ny; j++) {
+    for (let i = 0; i < ncx; i++) {
+      const k = j * nx + i;
+      const inL = mask[k]!;
+      const inR = mask[k + 1]!;
+      if (inL === inR) continue;
+      const d = inL ? phi[k]! - phi[k + 1]! : phi[k + 1]! - phi[k]!;
+      sum += aH[j * ncx + i]! * d;
+    }
+  }
+  for (let j = 0; j < ny - 1; j++) {
+    for (let i = 0; i < nx; i++) {
+      const k = j * nx + i;
+      const inB = mask[k]!;
+      const inT = mask[k + nx]!;
+      if (inB === inT) continue;
+      const d = inB ? phi[k]! - phi[k + nx]! : phi[k + nx]! - phi[k]!;
+      sum += aV[j * nx + i]! * d;
+    }
+  }
+  return EPS_0 * sum;
+}
+
 /**
  * Cell-centered electric field E = −∇φ [V/m], averaged from the four corner
  * nodes of each cell. For visualization (arrows, |E| heatmaps) and per-region

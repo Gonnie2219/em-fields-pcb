@@ -63,7 +63,7 @@ export function useStackupSolves(geoms: KeyedGeom[], quality: Quality, targetZ0:
       if (d.tag) inFlight.current.delete(d.tag);
       setPending((p) => Math.max(0, p - 1));
       if (d.task === 'invert') setInverts((prev) => lruSet(prev, d.tag!, d));
-      else setSolves((prev) => lruSet(prev, d.tag!, d));
+      else if (!d.task || d.task === 'solve') setSolves((prev) => lruSet(prev, d.tag!, d));
     };
     return () => {
       worker.terminate();

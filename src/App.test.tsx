@@ -10,6 +10,7 @@ import { TraceFieldsModule } from './modules/trace-fields/TraceFieldsModule';
 import { StackupModule } from './modules/stackup/StackupModule';
 import { PdnModule } from './modules/pdn/PdnModule';
 import { LoopModule } from './modules/loop-inductance/LoopModule';
+import { CrosstalkModule } from './modules/crosstalk/CrosstalkModule';
 
 describe('render smoke test', () => {
   it('renders the app shell with Module 1 active', () => {
@@ -36,6 +37,14 @@ describe('render smoke test', () => {
     expect(html).toContain('1 cm of loop, two ways');
     expect(html).toContain('Loop inductance L');
     expect(html).toContain('Ground bounce');
+  });
+
+  it('renders Module 6 in its pre-solve state with readouts and physics panel', () => {
+    const html = renderToString(<CrosstalkModule />);
+    expect(html).toContain('Coupled-pair field solution');
+    expect(html).toContain('Z_diff');
+    expect(html).toContain('NEXT / FEXT vs spacing');
+    expect(html).toContain('homogeneity theorem');
   });
 
   it('renders Module 3 with scorecard and plane-pair readouts', () => {
