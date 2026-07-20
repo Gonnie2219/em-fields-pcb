@@ -35,12 +35,12 @@ export const MODULES: ModuleInfo[] = [
     id: 'trace-fields',
     title: 'Fields around a trace',
     group: 'Fundamentals',
-    status: 'soon',
+    status: 'ready',
     description:
       'A 2D electrostatic solver computes the actual E-field around a microstrip or ' +
-      'stripline cross-section. Drag the geometry — trace width, dielectric height, εr — ' +
-      'and watch the field lines, the energy distribution, and the characteristic ' +
-      'impedance Z0 respond in real time. Makes it visceral that impedance is geometry.',
+      'stripline cross-section. Adjust trace width, dielectric height, and εr, and watch ' +
+      'the field, the energy distribution, and the characteristic impedance Z0 respond ' +
+      'in real time. Makes it visceral that impedance is geometry.',
   },
   {
     id: 'stackup-explorer',

@@ -5,7 +5,9 @@
       "Skill(dataviz)",
       "PowerShell(npm test *)",
       "PowerShell(Start-Sleep -Seconds 2; \\(Invoke-WebRequest http://localhost:5173/ -UseBasicParsing\\).StatusCode; \\(Invoke-WebRequest http://localhost:5173/src/main.tsx -UseBasicParsing\\).StatusCode; \\(Invoke-WebRequest http://localhost:5173/src/modules/return-current/ReturnCurrentModule.tsx -UseBasicParsing\\).StatusCode)",
-      "PowerShell(git *)"
+      "PowerShell(git *)",
+      "PowerShell(Get-ChildItem dist\\\\assets | Where-Object Name -match 'worker' | Select-Object Name, Length; try { \\(Invoke-WebRequest http://localhost:5173/src/workers/fieldSolver.worker.ts -UseBasicParsing\\).StatusCode } catch { \"dev server down: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(npm run *)"
     ]
   }
 }

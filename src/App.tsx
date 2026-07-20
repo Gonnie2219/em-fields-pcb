@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { MODULES } from './modules/registry';
 import { StubModule } from './modules/StubModule';
 import { ReturnCurrentModule } from './modules/return-current/ReturnCurrentModule';
+import { TraceFieldsModule } from './modules/trace-fields/TraceFieldsModule';
+
+const MODULE_COMPONENTS: Record<string, ComponentType> = {
+  'return-current': ReturnCurrentModule,
+  'trace-fields': TraceFieldsModule,
+};
 
 export function App() {
   const [activeId, setActiveId] = useState('return-current');
@@ -16,7 +22,10 @@ export function App() {
           <h2>{info.title}</h2>
           {info.status === 'ready' && <p>{info.description}</p>}
         </header>
-        {info.id === 'return-current' ? <ReturnCurrentModule /> : <StubModule info={info} />}
+        {(() => {
+          const Module = MODULE_COMPONENTS[info.id];
+          return Module ? <Module /> : <StubModule info={info} />;
+        })()}
       </main>
     </div>
   );

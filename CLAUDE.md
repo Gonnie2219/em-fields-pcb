@@ -22,10 +22,18 @@ approximations matter more than visual flash.
 ```
 src/
   physics/      Pure physics functions + their .test.ts files (see rules below)
-  modules/      One folder per module + registry.tsx (metadata, groups, status)
-  components/   App shell: Sidebar, Slider, PhysicsPanel, Equation, Readout
+  workers/      Web Workers wrapping heavy solvers (fieldSolver.worker.ts)
+  modules/      One folder per module + registry.ts (metadata, groups, status)
+  components/   App shell: Sidebar, Slider, PhysicsPanel, Equation, colors, useCanvasDraw
   styles.css    Dark theme, CSS custom properties (palette tokens at :root)
 ```
+
+Reusable numerics: `src/physics/electrostatic.ts` is a geometry-agnostic 2D
+∇·(ε∇φ) = 0 solver (finite volumes, cell-centered εr, red-black SOR); geometry
+builders (e.g. `traceGeometry.ts`) produce `ElectrostaticProblem`s for it, and
+`transmissionLine.ts` turns the two-solve capacitances (real εr and vacuum)
+into quasi-TEM L′, Z₀, ε_eff, v_p. Module 3 should reuse all of this.
+Solves run in `src/workers/fieldSolver.worker.ts` (debounced, warm-started).
 
 ## Physics rules (non-negotiable)
 
@@ -56,7 +64,7 @@ Groups: Fundamentals / Stackup & Impedance / Power Integrity / SI & EMC.
 | # | Module | Group | Status |
 |---|--------|-------|--------|
 | 1 | Where does return current flow? | Fundamentals | **Implemented** |
-| 2 | Fields around a trace (2D electrostatic solver, E-field, Z0 vs geometry) | Fundamentals | Stub |
+| 2 | Fields around a trace (2D electrostatic solver, E-field, Z0 vs geometry) | Fundamentals | **Implemented** |
 | 3 | Stackup explorer (2/4/6-layer, field containment, good vs bad) | Stackup & Impedance | Stub |
 | 4 | Decoupling capacitors (\|Z\| vs f, ESR/ESL, anti-resonance) | Power Integrity | Stub |
 | 5 | Loop inductance (loop area, HF dominance) | Power Integrity | Stub |
@@ -68,6 +76,11 @@ Module 1 physics: HF return current density J(x) = I/(π·h)·1/(1+(x/h)²); DC 
 I/W; blended by a logistic in log10(f) centered near 10 kHz (labeled in the UI as a
 pedagogical approximation); skin depth δ = √(2ρ/ωµ) with ρ_Cu = 1.68e-8 Ω·m. The slot
 model is schematic/qualitative and labeled as such.
+
+Module 2 physics: quasi-TEM microstrip/stripline via the electrostatic solver and the
+two-solve method (see above); validated against parallel-plate closed forms and
+Hammerstad–Jensen (Z₀ and ε_eff within 5 % at w/h = 1 and 2, εr = 4.4), plus a
+grid-doubling convergence test (< 2 % Z₀ shift).
 
 ## Conventions
 
