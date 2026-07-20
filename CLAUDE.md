@@ -66,7 +66,7 @@ Groups: Fundamentals / Stackup & Impedance / Power Integrity / SI & EMC.
 | 1 | Where does return current flow? | Fundamentals | **Implemented** |
 | 2 | Fields around a trace (2D electrostatic solver, E-field, Z0 vs geometry) | Fundamentals | **Implemented** |
 | 3 | Stackup explorer (2/4/6-layer, field containment, good vs bad) | Stackup & Impedance | **Implemented** |
-| 4 | Decoupling capacitors (\|Z\| vs f, ESR/ESL, anti-resonance) | Power Integrity | Stub |
+| 4 | Decoupling capacitors (\|Z\| vs f, ESR/ESL, anti-resonance) | Power Integrity | **Implemented** |
 | 5 | Loop inductance (loop area, HF dominance) | Power Integrity | Stub |
 | 6 | Crosstalk (coupling vs spacing and height) | SI & EMC | Stub |
 | 7 | Wave playground (2D FDTD sandbox: reflections, shielding, via fences) | SI & EMC | Stub |
@@ -87,6 +87,12 @@ symmetric stripline when clearances match); solver validated against Cohn's exac
 stripline solution (within 3 %); width-for-50 Ω synthesis = closed-form guess + ≤ 3
 solver secant steps (round-trip within 1 Ω); interplane C″ = ε0εr/d. The worker gained
 an 'invert' task and cache tags; stackup heuristics (scorecard) live in the module.
+
+Module 4 physics (src/physics/pdn.ts, closed forms only — no worker): capacitor as
+series RLC Z = ESR + j(ωL_tot − 1/ωC) with L_tot = ESL + L_mount; SRF; parallel
+Z = 1/Σ(nᵢ/Zᵢ); plane branch reuses Module 3's C″ (in series with ~10 pH); target
+Z_t = V·ripple/ΔI; anti-resonance peak detection. Validated: RLC asymptotes < 1 %,
+|Z(SRF)| = ESR, army |Z|/n exact, decade-spread peak exists and ESR damps it.
 
 ## Conventions
 

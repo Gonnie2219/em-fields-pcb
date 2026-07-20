@@ -57,7 +57,7 @@ export const MODULES: ModuleInfo[] = [
     id: 'decoupling',
     title: 'Decoupling capacitors',
     group: 'Power Integrity',
-    status: 'soon',
+    status: 'ready',
     description:
       'A real capacitor is an RLC series circuit. Plot |Z| versus frequency for one ' +
       'capacitor, then add more in parallel — including mixed values — and discover ' +

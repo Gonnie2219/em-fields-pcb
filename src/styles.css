@@ -324,6 +324,33 @@ body {
   color: var(--ink);
 }
 
+.stack-table input,
+.stack-table select,
+.toggle input[type='number'],
+.readout input[type='number'] {
+  background: var(--page);
+  color: var(--ink-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.toggle select {
+  background: var(--page);
+  color: var(--ink-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.readout input[type='number'] {
+  margin: 0 2px;
+}
+
 .score-list {
   list-style: none;
   margin: 0;

@@ -8,6 +8,7 @@ import { renderToString } from 'react-dom/server';
 import { App } from './App';
 import { TraceFieldsModule } from './modules/trace-fields/TraceFieldsModule';
 import { StackupModule } from './modules/stackup/StackupModule';
+import { PdnModule } from './modules/pdn/PdnModule';
 
 describe('render smoke test', () => {
   it('renders the app shell with Module 1 active', () => {
@@ -20,6 +21,13 @@ describe('render smoke test', () => {
     const html = renderToString(<TraceFieldsModule />);
     expect(html).toContain('solving');
     expect(html).toContain('Characteristic impedance');
+  });
+
+  it('renders Module 4 with plot, builder table, and readouts', () => {
+    const html = renderToString(<PdnModule />);
+    expect(html).toContain('power distribution network');
+    expect(html).toContain('PDN builder');
+    expect(html).toContain('Self-resonant frequencies');
   });
 
   it('renders Module 3 with scorecard and plane-pair readouts', () => {
