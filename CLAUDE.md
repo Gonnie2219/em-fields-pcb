@@ -67,7 +67,7 @@ Groups: Fundamentals / Stackup & Impedance / Power Integrity / SI & EMC.
 | 2 | Fields around a trace (2D electrostatic solver, E-field, Z0 vs geometry) | Fundamentals | **Implemented** |
 | 3 | Stackup explorer (2/4/6-layer, field containment, good vs bad) | Stackup & Impedance | **Implemented** |
 | 4 | Decoupling capacitors (\|Z\| vs f, ESR/ESL, anti-resonance) | Power Integrity | **Implemented** |
-| 5 | Loop inductance (loop area, HF dominance) | Power Integrity | Stub |
+| 5 | Loop inductance (loop area, HF dominance) | Power Integrity | **Implemented** |
 | 6 | Crosstalk (coupling vs spacing and height) | SI & EMC | Stub |
 | 7 | Wave playground (2D FDTD sandbox: reflections, shielding, via fences) | SI & EMC | Stub |
 | 8 | Grounding sins (slot under trace, split planes) | SI & EMC | Stub |
@@ -93,6 +93,18 @@ series RLC Z = ESR + j(ωL_tot − 1/ωC) with L_tot = ESL + L_mount; SRF; paral
 Z = 1/Σ(nᵢ/Zᵢ); plane branch reuses Module 3's C″ (in series with ~10 pH); target
 Z_t = V·ripple/ΔI; anti-resonance peak detection. Validated: RLC asymptotes < 1 %,
 |Z(SRF)| = ESR, army |Z|/n exact, decade-spread peak exists and ESR damps it.
+
+Module 5 physics (src/physics/loopInductance.ts, closed forms only — no worker):
+rectangular-loop external L from Rosa/Grover partial-inductance sums (square loop
+10 cm / 0.5 mm wire = 361.9 nH reference); LF internal L = µ0/(8π) per meter of wire
+(toggle, justified by Module 1's skinDepth, which is re-exported — never reimplemented);
+wire pair L′ = (µ0/π)acosh(D/2r); trace-over-plane L′ = µ0h/w vs. Hammerstad–Jensen
+Z₀(εr=1)/c (the gap is fringing); cap mounting loop = rectangle (span + 2·escape) ×
+depth-to-plane with r_eff = 0.2235(w+t) GMD strip radius, labeled ~±30 % estimate
+(model runs ~2–3× above Module 4's folk presets; discrepancy is flagged in the UI,
+not tuned away); R(f) = DC → skin-shell ρl/(π(r²−(r−δ)²)); crossover ωL = R by
+bisection (default loop ≈ 3.8 kHz); ground bounce V = L·ΔI/Δt. Depth presets come
+from Module 3's stackups. UI: scenario tabs with the shaded loop area as the star.
 
 ## Conventions
 

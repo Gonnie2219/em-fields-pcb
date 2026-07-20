@@ -9,6 +9,7 @@ import { App } from './App';
 import { TraceFieldsModule } from './modules/trace-fields/TraceFieldsModule';
 import { StackupModule } from './modules/stackup/StackupModule';
 import { PdnModule } from './modules/pdn/PdnModule';
+import { LoopModule } from './modules/loop-inductance/LoopModule';
 
 describe('render smoke test', () => {
   it('renders the app shell with Module 1 active', () => {
@@ -28,6 +29,13 @@ describe('render smoke test', () => {
     expect(html).toContain('power distribution network');
     expect(html).toContain('PDN builder');
     expect(html).toContain('Self-resonant frequencies');
+  });
+
+  it('renders Module 5 with comparison strip, readouts, and bounce calculator', () => {
+    const html = renderToString(<LoopModule />);
+    expect(html).toContain('1 cm of loop, two ways');
+    expect(html).toContain('Loop inductance L');
+    expect(html).toContain('Ground bounce');
   });
 
   it('renders Module 3 with scorecard and plane-pair readouts', () => {

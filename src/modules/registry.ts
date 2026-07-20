@@ -68,7 +68,7 @@ export const MODULES: ModuleInfo[] = [
     id: 'loop-inductance',
     title: 'Loop inductance',
     group: 'Power Integrity',
-    status: 'soon',
+    status: 'ready',
     description:
       'Inductance belongs to loops, not wires. Stretch and shrink a current loop and see ' +
       'its inductance and the impedance it presents at high frequency. Explains why loop ' +

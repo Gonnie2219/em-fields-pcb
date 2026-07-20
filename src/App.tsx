@@ -6,12 +6,14 @@ import { ReturnCurrentModule } from './modules/return-current/ReturnCurrentModul
 import { TraceFieldsModule } from './modules/trace-fields/TraceFieldsModule';
 import { StackupModule } from './modules/stackup/StackupModule';
 import { PdnModule } from './modules/pdn/PdnModule';
+import { LoopModule } from './modules/loop-inductance/LoopModule';
 
 const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'return-current': ReturnCurrentModule,
   'trace-fields': TraceFieldsModule,
   'stackup-explorer': StackupModule,
   decoupling: PdnModule,
+  'loop-inductance': LoopModule,
 };
 
 export function App() {
