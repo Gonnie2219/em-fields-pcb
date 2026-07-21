@@ -110,9 +110,13 @@ export function usePairSolver(g: CoupledPairGeometry, quality: Quality) {
       const worker = sweepWorker.current;
       if (!worker || sweepInFlight.current.has(sig)) return;
       sweepInFlight.current.add(sig);
+      // Sweep responses are matched by tag, never by id — do NOT bump the
+      // shared seq counter here, or a pair solve slower than this 500 ms
+      // timer gets its reply dropped (id ≠ seq) and the module hangs on
+      // "solving…" (seen with cold production-build solves).
       const req: PairSweepRequest = {
         task: 'pairSweep',
-        id: ++seq.current,
+        id: 0,
         g,
         spacings: sweepSpacings(g),
         tag: sig,
