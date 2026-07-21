@@ -5,3 +5,4 @@ dist/
 npm-debug.log*
 .vite/
 coverage/
+.claude/settings.local.json
