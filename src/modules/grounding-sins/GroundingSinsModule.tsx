@@ -115,7 +115,9 @@ export function GroundingSinsModule() {
     const dL = fixVias ? 2 * L_VIA : dLDetour;
     const detourText = fixVias
       ? `2 hops × ${VIA.hMm} mm via`
-      : `${(2 * aMm + slotWMm).toFixed(1)} mm extra path (a = ${aMm.toFixed(1)} mm)`;
+      : aMm <= 0
+        ? 'crossing at the slot end — no detour'
+        : `${(2 * aMm + slotWMm).toFixed(1)} mm extra path (a = ${aMm.toFixed(1)} mm)`;
     return { rect, aMm, dL, dLDetour, detourText, endY: nearestEndY(rect) };
   }, [slotLenMm, slotWMm, slotXMm, crossFrac, hMm, fixVias]);
 
