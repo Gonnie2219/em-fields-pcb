@@ -76,7 +76,8 @@ Groups: Fundamentals / Stackup & Impedance / Power Integrity / SI & EMC.
 | 7 | Wave playground (2D FDTD sandbox: reflections, shielding, via fences) | SI & EMC | **Implemented** |
 | 8 | Grounding sins (slot under trace, split planes, layer hop) | SI & EMC | **Implemented** |
 
-All 8 roadmap modules are implemented.
+All 8 roadmap modules are implemented — **v1.0 shipped** (live on GitHub Pages, see
+Deployment).
 
 Module 1 physics: HF return current density J(x) = I/(π·h)·1/(1+(x/h)²); DC limit uniform
 I/W; blended by a logistic in log10(f) centered near 10 kHz (labeled in the UI as a
@@ -169,8 +170,26 @@ tab reuses it for |Z_return| with crossover annotations.
 Browser verification notes: Chrome throttles timers and suspends
 requestAnimationFrame in hidden/occluded tabs — keep the tab foregrounded during
 automated browser checks. Hidden-tab throttling masquerades as a solve hang
-(Module 6's debounce) and as 0 fps (Module 7, where suspending is deliberate).
-Live-check screenshots from the Module 6/7 verification live in docs/verification/.
+(Module 6's debounce) and as 0 fps (Module 7, where suspending is deliberate);
+`document.visibilityState === 'hidden'` + a zero-count rAF probe is the quick
+diagnostic, and a background tab behind the user's active tab counts as hidden.
+Also: after a page load/reload, the first synthetic click (sometimes the first
+two) only restores page focus and does not register on the target — click again,
+or drive navigation via DOM `.click()` in the console. Live-check screenshots
+from the Module 6/7/8 and deployment verifications live in docs/verification/.
+
+## Deployment
+
+- Live site: https://gonnie2219.github.io/em-fields-pcb/ (GitHub Pages, repo
+  https://github.com/Gonnie2219/em-fields-pcb, base path `/em-fields-pcb/` in
+  vite.config.ts).
+- Deploys run automatically on every push to `main` via
+  `.github/workflows/deploy.yml` (build source: GitHub Actions). The workflow
+  runs the full Vitest suite before building — red tests block the deploy.
+- Worker-protocol note from the deploy shakedown: pair-solver sweep responses
+  are matched by `tag`, never by `id` — the sweep request must not consume the
+  shared pair sequence counter (usePairSolver), or slow cold solves get their
+  replies dropped.
 
 ## Conventions
 
