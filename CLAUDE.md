@@ -74,7 +74,9 @@ Groups: Fundamentals / Stackup & Impedance / Power Integrity / SI & EMC.
 | 5 | Loop inductance (loop area, HF dominance) | Power Integrity | **Implemented** |
 | 6 | Crosstalk (coupling vs spacing and height) | SI & EMC | **Implemented** |
 | 7 | Wave playground (2D FDTD sandbox: reflections, shielding, via fences) | SI & EMC | **Implemented** |
-| 8 | Grounding sins (slot under trace, split planes) | SI & EMC | Stub |
+| 8 | Grounding sins (slot under trace, split planes, layer hop) | SI & EMC | **Implemented** |
+
+All 8 roadmap modules are implemented.
 
 Module 1 physics: HF return current density J(x) = I/(π·h)·1/(1+(x/h)²); DC limit uniform
 I/W; blended by a logistic in log10(f) centered near 10 kHz (labeled in the UI as a
@@ -143,6 +145,26 @@ the 200×120 @ 0.5 mm board runs at display rate). Scenario builders
 (cavity / via fence / slot / shielded box) in src/modules/wave-playground/scenarios.ts.
 Display note: the Ez heatmap is diverging blue–dark–red (dark = zero), not
 blue-white-red — a white midpoint would fight the dark-theme plot conventions.
+
+Module 8 physics (src/physics/groundingSins.ts — closed forms + one plan-view reuse
+of the SOR solver, no new workers): detour ΔL when a slot/moat breaks the HF return
+corridor = Grover rectangle (Module 5's rectLoopInductance) with sides a (crossing →
+obstacle end/bridge) × b (slot width) and r_eff = max(w_trace/2, min(3h, b/4, a/4)),
+clamped ≥ 0 — labeled an order-of-magnitude estimate (frozen anchor: 20 × 1 mm slot,
+center crossing, h = 0.2 mm ⇒ 5.567 nH); via partial inductance L = 5.08·h·[ln(4h/d)+1]
+nH (h, d in inches; Johnson & Graham 1993, ch. 7 "Vias" — 1.6 mm × ⌀0.25 mm ⇒ 1.358 nH);
+layer-hop return impedance zReturn(f): planes-only 1/jωC over a local patch (Module 3's
+C″), stitching via jωL (spreading L ignored), stitch cap = Module 4's capImpedance with
+Module 5's mounting L (19.0 pF patch + 1.36 nH via cross over at 0.99 GHz); ground
+bounce re-exported from Module 5. DC plane current: solveDcPlane reuses solveLaplace as
+steady conduction ∇·(σ∇φ)=0 (εr map read as σ_rel, slots ≈ 0, source/sink Dirichlet
+discs at the trace endpoint vias); currents via conductorCharge/ε0; validated in = out
+< 1 % and all-but-a-gap slot funnels > 98 % of the column flux through the gap. Solve
+runs debounced + warm-started on the main thread (src/modules/grounding-sins/
+useDcSolve.ts). UI: three scenario tabs (slot / moat / layer hop) on a shared plan-view
+canvas (±3h corridor with detour, DC |J| heatmap + streamlines); Module 4's PdnPlot
+gained optional `bands`/`target` props (defaults preserve Module 4) so the layer-hop
+tab reuses it for |Z_return| with crossover annotations.
 
 Browser verification notes: Chrome throttles timers and suspends
 requestAnimationFrame in hidden/occluded tabs — keep the tab foregrounded during

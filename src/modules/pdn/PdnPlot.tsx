@@ -22,8 +22,11 @@ interface Props {
   curves: Curve[];
   /** Index into curves used for the hover tooltip (the combined curve). */
   hoverIndex: number;
-  target: number;
+  /** Target-impedance line; omit to hide it (e.g. Module 8's reuse). */
+  target?: number;
   peaks: Peak[];
+  /** Background frequency bands; defaults to the PDN charge-supplier bands. */
+  bands?: { f0: number; f1: number; label: string }[];
 }
 
 const HEIGHT = 380;
@@ -37,7 +40,7 @@ const BANDS = [
   { f0: 3e8, f1: 1e9, label: 'planes + on-die' },
 ];
 
-export function PdnPlot({ freqs, curves, hoverIndex, target, peaks }: Props) {
+export function PdnPlot({ freqs, curves, hoverIndex, target, peaks, bands }: Props) {
   const [hoverX, setHoverX] = useState<number | null>(null);
 
   const draw = useCallback(
@@ -48,8 +51,8 @@ export function PdnPlot({ freqs, curves, hoverIndex, target, peaks }: Props) {
       const lf1 = Math.log10(freqs[freqs.length - 1]!);
 
       // y-range from finite data + target, snapped to decades
-      let lo = target;
-      let hi = target;
+      let lo = target ?? Infinity;
+      let hi = target ?? 0;
       for (const c of curves) {
         for (const v of c.z) {
           if (Number.isFinite(v) && v > 0) {
@@ -57,6 +60,10 @@ export function PdnPlot({ freqs, curves, hoverIndex, target, peaks }: Props) {
             hi = Math.max(hi, v);
           }
         }
+      }
+      if (!Number.isFinite(lo) || hi <= 0) {
+        lo = 1e-2;
+        hi = 1e2;
       }
       const ly0 = Math.floor(Math.log10(Math.max(lo, 1e-5)));
       const ly1 = Math.ceil(Math.log10(Math.min(hi, 1e4)));
@@ -69,7 +76,7 @@ export function PdnPlot({ freqs, curves, hoverIndex, target, peaks }: Props) {
       ctx.font = '11px system-ui, sans-serif';
 
       // Charge-supplier bands
-      BANDS.forEach((b, i) => {
+      (bands ?? BANDS).forEach((b, i) => {
         ctx.fillStyle = i % 2 ? 'rgba(255,255,255,0.035)' : 'rgba(255,255,255,0.015)';
         ctx.fillRect(px(b.f0), M.top, px(b.f1) - px(b.f0), ph);
         ctx.fillStyle = COLORS.muted;
@@ -116,17 +123,19 @@ export function PdnPlot({ freqs, curves, hoverIndex, target, peaks }: Props) {
       ctx.clip();
 
       // Target line
-      ctx.strokeStyle = '#ec835a';
-      ctx.setLineDash([7, 5]);
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(M.left, py(target));
-      ctx.lineTo(M.left + pw, py(target));
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = '#ec835a';
-      ctx.textAlign = 'left';
-      ctx.fillText(`target ${formatOhm(target)}`, M.left + 6, py(target) - 5);
+      if (target !== undefined) {
+        ctx.strokeStyle = '#ec835a';
+        ctx.setLineDash([7, 5]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(M.left, py(target));
+        ctx.lineTo(M.left + pw, py(target));
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#ec835a';
+        ctx.textAlign = 'left';
+        ctx.fillText(`target ${formatOhm(target)}`, M.left + 6, py(target) - 5);
+      }
 
       for (const c of curves) {
         ctx.strokeStyle = c.color;
@@ -214,7 +223,7 @@ export function PdnPlot({ freqs, curves, hoverIndex, target, peaks }: Props) {
         }
       }
     },
-    [freqs, curves, hoverIndex, target, peaks, hoverX],
+    [freqs, curves, hoverIndex, target, peaks, bands, hoverX],
   );
 
   const ref = useCanvasDraw(draw, HEIGHT);

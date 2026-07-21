@@ -12,6 +12,7 @@ import { PdnModule } from './modules/pdn/PdnModule';
 import { LoopModule } from './modules/loop-inductance/LoopModule';
 import { CrosstalkModule } from './modules/crosstalk/CrosstalkModule';
 import { WavePlaygroundModule } from './modules/wave-playground/WavePlaygroundModule';
+import { GroundingSinsModule } from './modules/grounding-sins/GroundingSinsModule';
 
 describe('render smoke test', () => {
   it('renders the app shell with Module 1 active', () => {
@@ -54,6 +55,15 @@ describe('render smoke test', () => {
     expect(html).toContain('Via fence');
     expect(html).toContain('Courant');
     expect(html).toContain('analytic cavity modes');
+  });
+
+  it('renders Module 8 with scenario tabs, readouts, and physics panel', () => {
+    const html = renderToString(<GroundingSinsModule />);
+    expect(html).toContain('Slot under a trace');
+    expect(html).toContain('Split plane / moat');
+    expect(html).toContain('Layer hop');
+    expect(html).toContain('added inductance ΔL');
+    expect(html).toContain('The Physics');
   });
 
   it('renders Module 3 with scorecard and plane-pair readouts', () => {

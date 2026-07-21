@@ -99,10 +99,11 @@ export const MODULES: ModuleInfo[] = [
     id: 'grounding-sins',
     title: 'Grounding sins',
     group: 'SI & EMC',
-    status: 'soon',
+    status: 'ready',
     description:
-      'The classic layout mistakes, animated: a trace crossing a slot in its return ' +
-      'plane, and split analog/digital planes done wrong. See the return current detour, ' +
-      'the loop area balloon, and the coupling it creates — and how to fix each one.',
+      'The classic return-path mistakes, quantified in plan view: a trace crossing a slot ' +
+      'in its reference plane, a split-plane moat, and a reference-plane change at a layer ' +
+      'hop. See the return current detour, the loop area balloon, and what each fix ' +
+      '(stitch vias, bridge, stitch cap) actually costs.',
   },
 ];

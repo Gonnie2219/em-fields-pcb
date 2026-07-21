@@ -9,6 +9,7 @@ import { PdnModule } from './modules/pdn/PdnModule';
 import { LoopModule } from './modules/loop-inductance/LoopModule';
 import { CrosstalkModule } from './modules/crosstalk/CrosstalkModule';
 import { WavePlaygroundModule } from './modules/wave-playground/WavePlaygroundModule';
+import { GroundingSinsModule } from './modules/grounding-sins/GroundingSinsModule';
 
 const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'return-current': ReturnCurrentModule,
@@ -18,6 +19,7 @@ const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'loop-inductance': LoopModule,
   crosstalk: CrosstalkModule,
   'wave-playground': WavePlaygroundModule,
+  'grounding-sins': GroundingSinsModule,
 };
 
 export function App() {
