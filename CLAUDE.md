@@ -144,6 +144,12 @@ the 200×120 @ 0.5 mm board runs at display rate). Scenario builders
 Display note: the Ez heatmap is diverging blue–dark–red (dark = zero), not
 blue-white-red — a white midpoint would fight the dark-theme plot conventions.
 
+Browser verification notes: Chrome throttles timers and suspends
+requestAnimationFrame in hidden/occluded tabs — keep the tab foregrounded during
+automated browser checks. Hidden-tab throttling masquerades as a solve hang
+(Module 6's debounce) and as 0 fps (Module 7, where suspending is deliberate).
+Live-check screenshots from the Module 6/7 verification live in docs/verification/.
+
 ## Conventions
 
 - Keep diffs small; edit in place; no orphaned code.
