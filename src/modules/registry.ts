@@ -89,7 +89,7 @@ export const MODULES: ModuleInfo[] = [
     id: 'wave-playground',
     title: 'Wave playground',
     group: 'SI & EMC',
-    status: 'soon',
+    status: 'ready',
     description:
       'A 2D FDTD sandbox: launch waves and watch them propagate, reflect, and diffract. ' +
       'Place walls, slots, shields, and via fences, and see with your own eyes what ' +

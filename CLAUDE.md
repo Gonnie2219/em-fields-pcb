@@ -22,7 +22,7 @@ approximations matter more than visual flash.
 ```
 src/
   physics/      Pure physics functions + their .test.ts files (see rules below)
-  workers/      Web Workers wrapping heavy solvers (fieldSolver.worker.ts)
+  workers/      Web Workers wrapping heavy solvers (fieldSolver.worker.ts, fdtd.worker.ts)
   modules/      One folder per module + registry.ts (metadata, groups, status)
   components/   App shell: Sidebar, Slider, PhysicsPanel, Equation, colors, useCanvasDraw
   styles.css    Dark theme, CSS custom properties (palette tokens at :root)
@@ -73,7 +73,7 @@ Groups: Fundamentals / Stackup & Impedance / Power Integrity / SI & EMC.
 | 4 | Decoupling capacitors (\|Z\| vs f, ESR/ESL, anti-resonance) | Power Integrity | **Implemented** |
 | 5 | Loop inductance (loop area, HF dominance) | Power Integrity | **Implemented** |
 | 6 | Crosstalk (coupling vs spacing and height) | SI & EMC | **Implemented** |
-| 7 | Wave playground (2D FDTD sandbox: reflections, shielding, via fences) | SI & EMC | Stub |
+| 7 | Wave playground (2D FDTD sandbox: reflections, shielding, via fences) | SI & EMC | **Implemented** |
 | 8 | Grounding sins (slot under trace, split planes) | SI & EMC | Stub |
 
 Module 1 physics: HF return current density J(x) = I/(π·h)·1/(1+(x/h)²); DC limit uniform
@@ -123,6 +123,26 @@ vs Module 2's Z₀ (3 %), stripline Lm/Ls = Cm/Cs (homogeneity, 2 %), Cm/Cs mono
 s, NEXT length-independent when saturated / FEXT linear, grid-doubling Z_odd < 2 %.
 Worker gained 'pair' (5 pair + 2 isolated solves, warm-started) and 'pairSweep'
 (coarse-grid spacing sweep on drag-release, cached per geometry) tasks.
+
+Module 7 physics (src/physics/fdtd.ts + src/workers/fdtd.worker.ts): 2D FDTD, TMz
+(Ez, Hx, Hy) on a Yee grid, leapfrog updates (Yee 1966; Taflove & Hagness 3rd ed.);
+dt = S·dx/(c√2) with S = 0.99, createSim throws for S > 1 (allowUnstable for the
+divergence test); per-node εr map + PEC mask; boundaries: PEC, PMC (missing
+outside-H terms → the magnetic wall sits half a cell outside the Ez boundary, so a
+PMC cavity is exactly nx·dx × ny·dx), first-order Mur ABC (Mur 1981) matched to the
+local c′ = c/√εr; soft Gaussian/CW point sources; probes + FFT helpers (Hann,
+zero-pad, parabolic peak) and analytic f_mn = c/(2√εr)·√((m/a)²+(n/b)²). Validated:
+pulse speed = c and c/2 within 2 % (quasi-1D PMC rig with a uniform source column —
+no 2D wake), Courant guard + S = 1.05 divergence, Mur normal-incidence residual < 5 %
+measured against a large-PEC reference run (the difference isolates the ABC
+reflection from the outgoing wake), cavity f₁₀ within 3 % of the 722.9 MHz analytic
+value, PEC-box energy bounded over 10 000 steps, off-bin sine peak within 0.1 %.
+Worker protocol: rAF-driven 'frame' requests carrying transferable ping-pong
+ArrayBuffers (zero per-frame allocation; steps-per-frame configurable, default 8;
+the 200×120 @ 0.5 mm board runs at display rate). Scenario builders
+(cavity / via fence / slot / shielded box) in src/modules/wave-playground/scenarios.ts.
+Display note: the Ez heatmap is diverging blue–dark–red (dark = zero), not
+blue-white-red — a white midpoint would fight the dark-theme plot conventions.
 
 ## Conventions
 

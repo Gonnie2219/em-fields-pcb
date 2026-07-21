@@ -8,6 +8,7 @@ import { StackupModule } from './modules/stackup/StackupModule';
 import { PdnModule } from './modules/pdn/PdnModule';
 import { LoopModule } from './modules/loop-inductance/LoopModule';
 import { CrosstalkModule } from './modules/crosstalk/CrosstalkModule';
+import { WavePlaygroundModule } from './modules/wave-playground/WavePlaygroundModule';
 
 const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'return-current': ReturnCurrentModule,
@@ -16,6 +17,7 @@ const MODULE_COMPONENTS: Record<string, ComponentType> = {
   decoupling: PdnModule,
   'loop-inductance': LoopModule,
   crosstalk: CrosstalkModule,
+  'wave-playground': WavePlaygroundModule,
 };
 
 export function App() {

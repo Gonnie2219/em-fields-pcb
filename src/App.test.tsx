@@ -11,6 +11,7 @@ import { StackupModule } from './modules/stackup/StackupModule';
 import { PdnModule } from './modules/pdn/PdnModule';
 import { LoopModule } from './modules/loop-inductance/LoopModule';
 import { CrosstalkModule } from './modules/crosstalk/CrosstalkModule';
+import { WavePlaygroundModule } from './modules/wave-playground/WavePlaygroundModule';
 
 describe('render smoke test', () => {
   it('renders the app shell with Module 1 active', () => {
@@ -45,6 +46,14 @@ describe('render smoke test', () => {
     expect(html).toContain('Z_diff');
     expect(html).toContain('NEXT / FEXT vs spacing');
     expect(html).toContain('homogeneity theorem');
+  });
+
+  it('renders Module 7 with scenario tabs, transport, and physics panel', () => {
+    const html = renderToString(<WavePlaygroundModule />);
+    expect(html).toContain('Plane-pair cavity');
+    expect(html).toContain('Via fence');
+    expect(html).toContain('Courant');
+    expect(html).toContain('analytic cavity modes');
   });
 
   it('renders Module 3 with scorecard and plane-pair readouts', () => {
